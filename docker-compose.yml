@@ -1,0 +1,85 @@
+version: '3.9'
+
+services:
+  # ─── Message Broker ────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: aura_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - aura-net
+
+  # ─── Flask REST API ─────────────────────────────────────────────────────────
+  flask:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aura_flask
+    command: python run.py
+    environment:
+      - FLASK_DEBUG=1
+      - DATABASE_URL=sqlite:////data/aura.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=aura-sbi-demo-secret-key-2025
+    volumes:
+      - ./backend:/app
+      - aura_data:/data
+    ports:
+      - "5000:5000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - aura-net
+
+  # ─── Celery Background Worker ───────────────────────────────────────────────
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aura_celery
+    command: celery -A worker:celery_app worker --loglevel=info --concurrency=2
+    environment:
+      - DATABASE_URL=sqlite:////data/aura.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+      - aura_data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - aura-net
+
+  # ─── Vue.js Frontend (Vite dev server) ─────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aura_frontend
+    environment:
+      - BACKEND_URL=http://flask:5000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - flask
+    networks:
+      - aura-net
+
+volumes:
+  aura_data:
+
+networks:
+  aura-net:
+    driver: bridge

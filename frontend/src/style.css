@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply bg-slate-50 text-slate-800;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar        { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track  { @apply bg-slate-100; }
+  ::-webkit-scrollbar-thumb  { @apply bg-slate-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }
+}
+
+@layer components {
+  /* Reusable button variants */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-gradient-to-r from-violet-600 to-indigo-600
+           text-white font-semibold px-5 py-2.5 rounded-xl
+           hover:from-violet-500 hover:to-indigo-500
+           focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2
+           disabled:opacity-60 disabled:cursor-not-allowed
+           transition-all duration-200 shadow-sm;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           text-slate-500 font-medium px-4 py-2.5 rounded-xl
+           hover:bg-slate-100 border border-slate-200
+           focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2
+           disabled:opacity-60 transition-colors duration-200;
+  }
+
+  /* Base card */
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-slate-100;
+  }
+}
+
+@layer utilities {
+  /* Gradient text */
+  .gradient-text-violet {
+    background: linear-gradient(135deg, #7C3AED, #4F46E5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glassmorphism card */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+}
